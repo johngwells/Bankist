@@ -158,7 +158,6 @@ nav.addEventListener('mouseout', handleHover.bind(1));
 const header = document.querySelector('.header');
 const navHeight = nav.getBoundingClientRect().height;
 
-
 const stickyNav = function (entries) {
   const [entry] = entries; // same as entries[0] getting the first element
   if (!entry.isIntersecting) nav.classList.add('sticky');
@@ -168,15 +167,15 @@ const stickyNav = function (entries) {
 const headerObserver = new IntersectionObserver(stickyNav, {
   root: null,
   threshold: 0,
-  rootMargin: `-${navHeight}px`,
+  rootMargin: `-${navHeight}px`
 });
 
 headerObserver.observe(header);
 
 // Reveal Sectionsion
-const allSections = document.querySelectorAll('.section')
+const allSections = document.querySelectorAll('.section');
 
-const revealSection = function(entries, observer) {
+const revealSection = function (entries, observer) {
   const [entry] = entries;
 
   if (!entry.isIntersecting) return;
@@ -185,14 +184,42 @@ const revealSection = function(entries, observer) {
 
   // Stops events after all sections have appeared
   observer.unobserve(entry.target);
-}
+};
 
 const sectionObserver = new IntersectionObserver(revealSection, {
   root: null,
   threshold: 0.15
 });
 
-allSections.forEach(function(section) {
+allSections.forEach(function (section) {
   sectionObserver.observe(section);
   section.classList.add('section--hidden');
 });
+
+// Lazy loading images
+const imgTargets = document.querySelectorAll('img[data-src]');
+
+const loadImg = function (entries, observer) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  // Replace src with data-src
+  // dataset is where the properties are stored
+  entry.target.src = entry.target.dataset.src;
+
+  // cant just use remove but instead listen for the load event
+  entry.target.addEventListener('load', function() {
+    entry.target.classList.remove('lazy-img');
+  });
+
+  observer.unobserve(entry.target);
+};
+
+const imgObserver = new IntersectionObserver(loadImg, {
+  root: null,
+  threshold: 0,
+  rootMargin: '200px'
+});
+
+imgTargets.forEach((img) => imgObserver.observe(img));
